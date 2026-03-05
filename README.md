@@ -4,7 +4,7 @@ A `#golf` command for Lean 4 that measures proof complexity.
 
 ```lean
 #golf example (P : Prop) : P ∨ ¬P := by exact Classical.em P
--- Golf: 18 chars | term: 5 nodes | pp: 23 chars | axioms: 3 (Classical.choice, propext, Quot.sound)
+-- Golf: 18 chars | 4 heartbeats | term: 5 nodes | pp: 23 chars | axioms: 3 (Classical.choice, propext, Quot.sound)
 ```
 
 ## Metrics
@@ -12,6 +12,7 @@ A `#golf` command for Lean 4 that measures proof complexity.
 | Metric | Description |
 |--------|-------------|
 | **chars** | Non-whitespace characters in the proof body. `;` is free (equivalent to newline), `<;>` counts. |
+| **heartbeats** | Deterministic elaboration cost (same units as `maxHeartbeats`). |
 | **term** | Node count of the elaborated proof term (`Expr.sizeWithoutSharing`). |
 | **pp** | Character count of the pretty-printed proof term. |
 | **axioms** | Foundational axioms used transitively (same as `#print axioms`). |

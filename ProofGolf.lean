@@ -3,9 +3,10 @@
 
 Custom `#golf` command that wraps `example` or `theorem` declarations and reports:
 1. **Source score**: non-whitespace characters in the proof body
-2. **Term score**: Expr node count of the elaborated proof term
-3. **PP length**: character count of the pretty-printed proof term
-4. **Axioms**: foundational axioms transitively used by the proof
+2. **Heartbeats**: deterministic measure of elaboration cost
+3. **Term score**: Expr node count of the elaborated proof term
+4. **PP length**: character count of the pretty-printed proof term
+5. **Axioms**: foundational axioms transitively used by the proof
 -/
 
 import Lean
@@ -51,6 +52,7 @@ def formatTermInfo (val : Expr) (axioms : Array Name) : CommandElabM String := d
 /-- `#golf` wraps a declaration and reports proof complexity.
 
 - Source score: non-whitespace characters in the proof (after `:= by` or `:=`)
+- Heartbeats: deterministic elaboration cost (matches `maxHeartbeats` units)
 - Term score: Expr nodes in the elaborated proof term
 - PP length: character count of the pretty-printed proof term
 - Axioms: foundational axioms transitively used by the proof
@@ -59,14 +61,15 @@ Works for both `example` and named declarations (`theorem`, `def`).
 
 ```
 #golf example (P : Prop) : P → P := by exact id
--- Golf: 7 chars | term: 5 nodes | pp: 11 chars | axioms: none
+-- Golf: 7 chars | 3 heartbeats | term: 5 nodes | pp: 11 chars | axioms: none
 
 #golf theorem myThm (P : Prop) : P → P := by exact id
--- Golf: 7 chars | term: 5 nodes | pp: 11 chars | axioms: none
+-- Golf: 7 chars | 3 heartbeats | term: 5 nodes | pp: 11 chars | axioms: none
 ```
 -/
 elab "#golf " cmd:command : command => do
-  elabCommand cmd
+  let (_, heartbeats) ← withHeartbeats (elabCommand cmd)
+  let hb := heartbeats / 1000
   -- Source-level measurement
   let some valStx := cmd.raw.findKind ``Lean.Parser.Command.declValSimple
     | logInfo "Could not find proof body"; return
@@ -118,4 +121,4 @@ elab "#golf " cmd:command : command => do
               else pure ""
             catch _ => pure ""
     else pure ""
-  logInfo m!"Golf: {charScore} chars{termInfo}"
+  logInfo m!"Golf: {charScore} chars | {hb} heartbeats{termInfo}"
