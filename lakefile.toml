@@ -1,0 +1,6 @@
+name = "ProofGolf"
+version = "0.1.0"
+keywords = ["math", "proof", "golf"]
+
+[[lean_lib]]
+name = "ProofGolf"
